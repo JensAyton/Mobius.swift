@@ -37,7 +37,7 @@ public extension Mobius {
     /// Create a `Builder` to help you configure a `MobiusLoop ` before starting it.
     ///
     /// The builder is immutable. When setting various properties, a new instance of a builder will be returned.
-    /// It is therefore recommended to chain the loop configuration functions
+    /// It is therefore recommended to chain the loop configuration functions.
     ///
     /// Once done configuring the loop you can start the loop using `start(from:)`.
     ///
@@ -45,6 +45,7 @@ public extension Mobius {
     ///   - update: the `Update` function of the loop
     ///   - effectHandler: an instance conforming to the `ConnectableProtocol`. Will be used to handle effects by the loop
     /// - Returns: a `Builder` instance that you can further configure before starting the loop
+//    @available(*, unavailable)
     static func loop<T: LoopTypes, C: Connectable>(update: @escaping Update<T>, effectHandler: C) -> Builder<T> where C.InputType == T.Effect, C.OutputType == T.Event {
         return Builder<T>(
             update: update,
@@ -54,6 +55,29 @@ public extension Mobius {
             eventQueue: DispatchQueue(label: "event processor"),
             effectQueue: DispatchQueue(label: "effect processor", attributes: .concurrent),
             logger: AnyMobiusLogger(NoopLogger<T>())
+        )
+    }
+
+    /// Create a `Builder` to help you configure a `MobiusLoop ` before starting it.
+    ///
+    /// The builder is immutable. When setting various properties, a new instance of a builder will be returned.
+    /// It is therefore recommended to chain the loop configuration functions.
+    ///
+    /// Once done configuring the loop you can start the loop using `start(from:)`.
+    ///
+    /// - Parameters:
+    ///   - update: the `Update` function of the loop
+    ///   - effectHandler: an instance of `EffectHandler`. Will be used to handle effects by the loop
+    /// - Returns: a `Builder` instance that you can further configure before starting the loop
+    static func loop<Types: LoopTypes, Handler: EffectHandler>(update: @escaping Update<Types>, effectHandler: Handler) -> Builder<Types> where Handler.Effect == Types.Effect, Handler.Event == Types.Event {
+        return Builder<Types>(
+            update: update,
+            effectHandler: EffectHandlerConnectable(effectHandler: effectHandler),
+            initiator: { First(model: $0) },
+            eventSource: AnyEventSource<Types.Event>({ _ in AnonymousDisposable(disposer: {}) }),
+            eventQueue: DispatchQueue(label: "event processor"),
+            effectQueue: DispatchQueue(label: "effect processor", attributes: .concurrent),
+            logger: AnyMobiusLogger(NoopLogger<Types>())
         )
     }
 

@@ -10,6 +10,16 @@
 		02BED1BB21DD20D20093FB47 /* ConnectableContramap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9CE80421197FE000DB79A7 /* ConnectableContramap.swift */; };
 		2D54D0F021C11362002AAC19 /* AtomicBool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D54D0EF21C11362002AAC19 /* AtomicBool.swift */; };
 		2D54D0F121C1167C002AAC19 /* AtomicBool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D54D0EF21C11362002AAC19 /* AtomicBool.swift */; };
+		2D8E2D8822A5490C0078AFCE /* EffectHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D8E2D8722A5490C0078AFCE /* EffectHandler.swift */; };
+		2D8E2D8A22A549330078AFCE /* VoidEffectHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D8E2D8922A549330078AFCE /* VoidEffectHandler.swift */; };
+		2D8E2D8B22A549EB0078AFCE /* VoidEffectHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D8E2D8922A549330078AFCE /* VoidEffectHandler.swift */; };
+		2D8E2D8C22A549EE0078AFCE /* EffectHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D8E2D8722A5490C0078AFCE /* EffectHandler.swift */; };
+		2D8E2D8E22A54D950078AFCE /* CompositeEffectHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D8E2D8D22A54D950078AFCE /* CompositeEffectHandler.swift */; };
+		2D8E2D8F22A5519C0078AFCE /* CompositeEffectHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D8E2D8D22A54D950078AFCE /* CompositeEffectHandler.swift */; };
+		2D8E2D9122A5645F0078AFCE /* EffectHandlerConnectable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D8E2D9022A5645F0078AFCE /* EffectHandlerConnectable.swift */; };
+		2D8E2D9222A5667F0078AFCE /* EffectHandlerConnectable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D8E2D9022A5645F0078AFCE /* EffectHandlerConnectable.swift */; };
+		2DD0327422A6A21900450575 /* AnyEffectHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD0327322A6A21900450575 /* AnyEffectHandler.swift */; };
+		2DD0327522A6A2F000450575 /* AnyEffectHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD0327322A6A21900450575 /* AnyEffectHandler.swift */; };
 		2DDF54C0229BDB4800D05861 /* CompositeEventSourceBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF54BF229BDB4700D05861 /* CompositeEventSourceBuilder.swift */; };
 		2DDF54C1229BDB4800D05861 /* CompositeEventSourceBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF54BF229BDB4700D05861 /* CompositeEventSourceBuilder.swift */; };
 		2DDF54C3229BEEC400D05861 /* CompositeEventSourceBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF54C2229BEEC400D05861 /* CompositeEventSourceBuilderTests.swift */; };
@@ -261,6 +271,11 @@
 /* Begin PBXFileReference section */
 		2D2FE60F20625E76002DFD69 /* Mobius.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = Mobius.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		2D54D0EF21C11362002AAC19 /* AtomicBool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtomicBool.swift; sourceTree = "<group>"; };
+		2D8E2D8722A5490C0078AFCE /* EffectHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectHandler.swift; sourceTree = "<group>"; };
+		2D8E2D8922A549330078AFCE /* VoidEffectHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoidEffectHandler.swift; sourceTree = "<group>"; };
+		2D8E2D8D22A54D950078AFCE /* CompositeEffectHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompositeEffectHandler.swift; sourceTree = "<group>"; };
+		2D8E2D9022A5645F0078AFCE /* EffectHandlerConnectable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectHandlerConnectable.swift; sourceTree = "<group>"; };
+		2DD0327322A6A21900450575 /* AnyEffectHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyEffectHandler.swift; sourceTree = "<group>"; };
 		2DDF54BF229BDB4700D05861 /* CompositeEventSourceBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CompositeEventSourceBuilder.swift; sourceTree = "<group>"; };
 		2DDF54C2229BEEC400D05861 /* CompositeEventSourceBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompositeEventSourceBuilderTests.swift; sourceTree = "<group>"; };
 		2DF4C2F520DBDD4700A4B6DE /* libMobiusCore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libMobiusCore.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -483,6 +498,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2D8E2D8622A548F70078AFCE /* EffectHandlers */ = {
+			isa = PBXGroup;
+			children = (
+				2DD0327322A6A21900450575 /* AnyEffectHandler.swift */,
+				2D8E2D8D22A54D950078AFCE /* CompositeEffectHandler.swift */,
+				2D8E2D8722A5490C0078AFCE /* EffectHandler.swift */,
+				2D8E2D9022A5645F0078AFCE /* EffectHandlerConnectable.swift */,
+				2D8E2D8922A549330078AFCE /* VoidEffectHandler.swift */,
+			);
+			path = EffectHandlers;
+			sourceTree = "<group>";
+		};
 		2D9A2FAB205C06FA00B1A332 = {
 			isa = PBXGroup;
 			children = (
@@ -624,6 +651,7 @@
 				5B1F1038210F5E7D0067193C /* ConnectableConvenienceClasses */,
 				5BB287BC209995410043B530 /* Disposables */,
 				5B4A369821107D0E00279C7D /* EventSources */,
+				2D8E2D8622A548F70078AFCE /* EffectHandlers */,
 				5BB287C1209995410043B530 /* BrokenConnection.swift */,
 				5B237EB9209C4F3C00764576 /* Connectable.swift */,
 				5BB287BA209995410043B530 /* ConnectablePublisher.swift */,
@@ -1192,8 +1220,11 @@
 			files = (
 				2D54D0F121C1167C002AAC19 /* AtomicBool.swift in Sources */,
 				2DF4C30C20DBDD5C00A4B6DE /* MobiusController.swift in Sources */,
+				2D8E2D9222A5667F0078AFCE /* EffectHandlerConnectable.swift in Sources */,
 				2DF4C30120DBDD5800A4B6DE /* MobiusHooks.swift in Sources */,
+				2D8E2D8C22A549EE0078AFCE /* EffectHandler.swift in Sources */,
 				5B4A369B21107D2600279C7D /* AnyEventSource.swift in Sources */,
+				2DD0327522A6A2F000450575 /* AnyEffectHandler.swift in Sources */,
 				2DF4C30220DBDD5800A4B6DE /* ConnectablePublisher.swift in Sources */,
 				2DF4C2FF20DBDD5800A4B6DE /* Consumer.swift in Sources */,
 				2DF4C30A20DBDD5C00A4B6DE /* NoEffect.swift in Sources */,
@@ -1202,6 +1233,8 @@
 				2DF4C30D20DBDD5C00A4B6DE /* MobiusLogger.swift in Sources */,
 				2DF4C30820DBDD5C00A4B6DE /* BrokenConnection.swift in Sources */,
 				2DF4C30020DBDD5800A4B6DE /* MobiusLoop.swift in Sources */,
+				2D8E2D8B22A549EB0078AFCE /* VoidEffectHandler.swift in Sources */,
+				2D8E2D8F22A5519C0078AFCE /* CompositeEffectHandler.swift in Sources */,
 				2DF4C30720DBDD5C00A4B6DE /* EventSource.swift in Sources */,
 				2DF4C2FD20DBDD5800A4B6DE /* Connection.swift in Sources */,
 				5B7095992109E89C0099298B /* EffectRouterBuilder.swift in Sources */,
@@ -1251,20 +1284,25 @@
 			files = (
 				2D54D0F021C11362002AAC19 /* AtomicBool.swift in Sources */,
 				5BB28821209995810043B530 /* Mobius.swift in Sources */,
+				2D8E2D9122A5645F0078AFCE /* EffectHandlerConnectable.swift in Sources */,
 				5B1F103A210F5E9A0067193C /* BlockingFunctionConnectable.swift in Sources */,
 				5BB2882B209995860043B530 /* AnonymousDisposable.swift in Sources */,
 				5B4A369A21107D2600279C7D /* AnyEventSource.swift in Sources */,
+				2DD0327422A6A21900450575 /* AnyEffectHandler.swift in Sources */,
 				5BB2881A2099957D0043B530 /* MobiusLoop.swift in Sources */,
 				5BB288192099957D0043B530 /* Consumer.swift in Sources */,
 				5BB28826209995810043B530 /* MobiusController.swift in Sources */,
 				5BB2882A209995860043B530 /* CompositeDisposable.swift in Sources */,
+				2D8E2D8A22A549330078AFCE /* VoidEffectHandler.swift in Sources */,
 				5BB28828209995810043B530 /* Locking.swift in Sources */,
 				5BB2881D2099957D0043B530 /* First.swift in Sources */,
 				5BB28829209995860043B530 /* Disposable.swift in Sources */,
 				5BB288172099957D0043B530 /* Next.swift in Sources */,
+				2D8E2D8E22A54D950078AFCE /* CompositeEffectHandler.swift in Sources */,
 				5BB28827209995810043B530 /* MobiusLogger.swift in Sources */,
 				5BB28823209995810043B530 /* NoEffect.swift in Sources */,
 				2DDF54C0229BDB4800D05861 /* CompositeEventSourceBuilder.swift in Sources */,
+				2D8E2D8822A5490C0078AFCE /* EffectHandler.swift in Sources */,
 				5B1F103F210F5EE40067193C /* ConsumerConnectable.swift in Sources */,
 				5B1F1043210F5F590067193C /* ClosureConnectable.swift in Sources */,
 				5BB288182099957D0043B530 /* Connection.swift in Sources */,
