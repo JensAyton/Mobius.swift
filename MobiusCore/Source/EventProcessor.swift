@@ -22,7 +22,7 @@ import Foundation
 /// Internal class that manages the atomic state updates and notifications of model changes when processing of events via
 /// the Update function.
 class EventProcessor<Types: LoopTypes>: Disposable, CustomDebugStringConvertible {
-    let update: Update<Types>
+    let update: _OldUpdate<Types>
     let publisher: ConnectablePublisher<Next<Types.Model, Types.Effect>>
 
     private let queue: DispatchQueue
@@ -41,7 +41,7 @@ class EventProcessor<Types: LoopTypes>: Disposable, CustomDebugStringConvertible
     }
 
     init(
-        update: @escaping Update<Types>,
+        update: @escaping _OldUpdate<Types>,
         publisher: ConnectablePublisher<Next<Types.Model, Types.Effect>>,
         queue: DispatchQueue
     ) {

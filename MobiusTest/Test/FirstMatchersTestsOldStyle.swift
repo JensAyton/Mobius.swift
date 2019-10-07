@@ -22,15 +22,15 @@ import MobiusTest
 import Nimble
 import Quick
 
-class FirstMatchersTests: QuickSpec {
+class FirstMatchersTestsOldStyle: QuickSpec {
     // swiftlint:disable function_body_length
     override func spec() {
         describe("assertThatFirst") {
             var failureMessages: [String] = []
             let model = "3"
 
-            func testInitiator(model: inout String) -> [String] {
-                return ["2", "4"]
+            func testInitiator(model: String) -> First<String, String> {
+                return First<String, String>(model: model, effects: Set(["2", "4"]))
             }
 
             func failureDetector(message: String, file: StaticString, line: UInt) {

@@ -23,7 +23,7 @@ import Nimble
 import Quick
 
 // Should only test public APIs
-class MobiusIntegrationTests: QuickSpec {
+class MobiusIntegrationTestsOldStyle: QuickSpec {
     // swiftlint:disable function_body_length
     override func spec() {
         describe("Mobius integration tests") {
@@ -32,32 +32,27 @@ class MobiusIntegrationTests: QuickSpec {
                 typealias Event = String
                 typealias Effect = String
 
-                func initiate(model: inout Model) -> [Effect] {
+                func initiate(model: Model) -> First<Model, Effect> {
                     switch model {
                     case "start":
-                        model = "init"
-                        return ["trigger loading"]
+                        return First(model: "init", effects: ["trigger loading"])
                     default:
                         fatalError("unexpected model \(model)")
                     }
                 }
 
-                func update(model: inout Model, event: Event) -> [Effect] {
+                func update(model: Model, event: Event) -> Next<Model, Effect> {
                     switch event {
-                        case "button pushed":
-                            model = "pushed"
-                            return []
-                        case "trigger effect":
-                            model = "triggered"
-                            return ["leads to event"]
-                        case "effect feedback":
-                            model = "done"
-                            return []
-                        case "from source":
-                            model = "event sourced"
-                            return []
-                        default:
-                            fatalError("unexpected event \(event)")
+                    case "button pushed":
+                        return Next.next("pushed")
+                    case "trigger effect":
+                        return Next.next("triggered", effects: ["leads to event"])
+                    case "effect feedback":
+                        return Next.next("done")
+                    case "from source":
+                        return Next.next("event sourced")
+                    default:
+                        fatalError("unexpected event \(event)")
                     }
                 }
             }

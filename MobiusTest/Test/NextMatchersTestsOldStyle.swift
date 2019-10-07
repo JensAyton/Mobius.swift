@@ -28,7 +28,7 @@ import XCTest
 
 // swiftlint:disable file_length
 // swiftlint:disable type_body_length
-class XCTestNextMatchersTests: QuickSpec {
+class XCTestNextMatchersTestsOldStyle: QuickSpec {
     // swiftlint:disable function_body_length
     override func spec() {
         describe("AssertThatNext") {
@@ -42,9 +42,8 @@ class XCTestNextMatchersTests: QuickSpec {
                 failMessages = []
             }
 
-            func testUpdate(model: inout String, event: String) -> [String] {
-                model = "some model"
-                return ["some effect"]
+            func testUpdate(model: String, event: String) -> Next<String, String> {
+                return .next("some model", effects: Set(["some effect"]))
             }
 
             // Testing through proxy: UpdateSpec

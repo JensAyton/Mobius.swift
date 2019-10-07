@@ -29,7 +29,7 @@ import XCTest
 
 // swiftlint:disable file_length
 // swiftlint:disable type_body_length
-class NimbleNextMatchersTests: QuickSpec {
+class NimbleNextMatchersTestsOldStyle: QuickSpec {
     // swiftlint:disable function_body_length
     override func spec() {
         let assertionHandler = AssertionRecorder()
@@ -48,9 +48,8 @@ class NimbleNextMatchersTests: QuickSpec {
                 NimbleAssertionHandler = defaultHandler!
             }
 
-            func testUpdate(model: inout String, event: String) -> [String] {
-                model = "some model"
-                return ["some effect"]
+            func testUpdate(model: String, event: String) -> Next<String, String> {
+                return .next("some model", effects: Set(["some effect"]))
             }
 
             // Testing through proxy: UpdateSpec

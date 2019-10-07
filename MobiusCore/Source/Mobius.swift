@@ -25,9 +25,9 @@ public protocol LoopTypes {
     associatedtype Effect: Hashable
 }
 
-public typealias Update<T: LoopTypes> = (T.Model, T.Event) -> Next<T.Model, T.Effect>
+public typealias _NewUpdate<T: LoopTypes> = (inout T.Model, T.Event) -> [T.Effect]
 
-public typealias Initiator<T: LoopTypes> = (T.Model) -> First<T.Model, T.Effect>
+public typealias _NewInitiator<T: LoopTypes> = (inout T.Model) -> [T.Effect]
 
 public enum Mobius {}
 
@@ -45,7 +45,8 @@ public extension Mobius {
     ///   - update: the `Update` function of the loop
     ///   - effectHandler: an instance conforming to the `ConnectableProtocol`. Will be used to handle effects by the loop
     /// - Returns: a `Builder` instance that you can further configure before starting the loop
-    static func loop<T: LoopTypes, C: Connectable>(update: @escaping Update<T>, effectHandler: C) -> Builder<T> where C.InputType == T.Effect, C.OutputType == T.Event {
+    @available(*, deprecated, message: "use new update signature (inout Model, Event) -> [Effect]")
+    static func loop<T: LoopTypes, C: Connectable>(update: @escaping _OldUpdate<T>, effectHandler: C) -> Builder<T> where C.InputType == T.Effect, C.OutputType == T.Event {
         return Builder<T>(
             update: update,
             effectHandler: effectHandler,
@@ -57,19 +58,42 @@ public extension Mobius {
         )
     }
 
+    /// Create a `Builder` to help you configure a `MobiusLoop ` before starting it.
+    ///
+    /// The builder is immutable. When setting various properties, a new instance of a builder will be returned.
+    /// It is therefore recommended to chain the loop configuration functions
+    ///
+    /// Once done configuring the loop you can start the loop using `start(from:)`.
+    ///
+    /// - Parameters:
+    ///   - update: the `Update` function of the loop
+    ///   - effectHandler: an instance conforming to the `ConnectableProtocol`. Will be used to handle effects by the loop
+    /// - Returns: a `Builder` instance that you can further configure before starting the loop
+    static func loop<T: LoopTypes, C: Connectable>(update: @escaping _NewUpdate<T>, effectHandler: C) -> Builder<T> where C.InputType == T.Effect, C.OutputType == T.Event {
+        return Builder<T>(
+            update: Mobius._adaptUpdate(update),
+            effectHandler: effectHandler,
+            initiator: { First(model: $0) },
+            eventSource: AnyEventSource<T.Event>({ _ in AnonymousDisposable(disposer: {}) }),
+            eventQueue: DispatchQueue(label: "event processor"),
+            effectQueue: DispatchQueue(label: "effect processor", attributes: .concurrent),
+            logger: AnyMobiusLogger(NoopLogger<T>())
+        )
+    }
+
     struct Builder<Types: LoopTypes> {
-        private let update: Update<Types>
+        private let update: _OldUpdate<Types>
         private let effectHandler: AnyConnectable<Types.Effect, Types.Event>
-        private let initiator: Initiator<Types>
+        private let initiator: _OldInitiator<Types>
         private let eventSource: AnyEventSource<Types.Event>
         private let eventQueue: DispatchQueue
         private let effectQueue: DispatchQueue
         private let logger: AnyMobiusLogger<Types>
 
         fileprivate init<C: Connectable>(
-            update: @escaping Update<Types>,
+            update: @escaping _OldUpdate<Types>,
             effectHandler: C,
-            initiator: @escaping Initiator<Types>,
+            initiator: @escaping _OldInitiator<Types>,
             eventSource: AnyEventSource<Types.Event>,
             eventQueue: DispatchQueue,
             effectQueue: DispatchQueue,
@@ -96,11 +120,24 @@ public extension Mobius {
             )
         }
 
-        public func withInitiator(_ initiator: @escaping Initiator<Types>) -> Builder<Types> {
+        @available(*, deprecated, message: "use new initiator signature (Model) -> (Model, [Effect])")
+        public func withInitiator(_ initiator: @escaping _OldInitiator<Types>) -> Builder<Types> {
             return Builder<Types>(
                 update: update,
                 effectHandler: effectHandler,
                 initiator: initiator,
+                eventSource: eventSource,
+                eventQueue: eventQueue,
+                effectQueue: effectQueue,
+                logger: logger
+            )
+        }
+
+        public func withInitiator(_ initiator: @escaping _NewInitiator<Types>) -> Builder<Types> {
+            return Builder<Types>(
+                update: update,
+                effectHandler: effectHandler,
+                initiator: Mobius._adaptInitiator(initiator),
                 eventSource: eventSource,
                 eventQueue: eventQueue,
                 effectQueue: effectQueue,
@@ -160,11 +197,11 @@ public extension Mobius {
 }
 
 class LoggingInitiator<Types: LoopTypes> {
-    private let realInit: Initiator<Types>
+    private let realInit: _OldInitiator<Types>
     private let willInit: (Types.Model) -> Void
     private let didInit: (Types.Model, First<Types.Model, Types.Effect>) -> Void
 
-    init<L: MobiusLogger>(_ realInit: @escaping Initiator<Types>, _ logger: L) where L.Model == Types.Model, L.Event == Types.Event, L.Effect == Types.Effect {
+    init<L: MobiusLogger>(_ realInit: @escaping _OldInitiator<Types>, _ logger: L) where L.Model == Types.Model, L.Event == Types.Event, L.Effect == Types.Effect {
         self.realInit = realInit
         willInit = logger.willInitiate
         didInit = logger.didInitiate
@@ -180,11 +217,11 @@ class LoggingInitiator<Types: LoopTypes> {
 }
 
 class LoggingUpdate<Types: LoopTypes> {
-    private let realUpdate: Update<Types>
+    private let realUpdate: _OldUpdate<Types>
     private let willUpdate: (Types.Model, Types.Event) -> Void
     private let didUpdate: (Types.Model, Types.Event, Next<Types.Model, Types.Effect>) -> Void
 
-    init<L: MobiusLogger>(_ realUpdate: @escaping Update<Types>, _ logger: L) where L.Model == Types.Model, L.Event == Types.Event, L.Effect == Types.Effect {
+    init<L: MobiusLogger>(_ realUpdate: @escaping _OldUpdate<Types>, _ logger: L) where L.Model == Types.Model, L.Event == Types.Event, L.Effect == Types.Effect {
         self.realUpdate = realUpdate
         willUpdate = logger.willUpdate
         didUpdate = logger.didUpdate

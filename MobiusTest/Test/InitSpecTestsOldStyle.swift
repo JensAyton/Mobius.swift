@@ -23,22 +23,21 @@ import MobiusTest
 import Nimble
 import Quick
 
-class InitSpecTests: QuickSpec {
+class InitSpecTestsOldStyle: QuickSpec {
     override func spec() {
         describe("InitSpec") {
             context("when setting up a test scenario") {
-                var initiator: _NewInitiator<AllStrings>!
+                var initiator: _OldInitiator<AllStrings>!
                 var spec: InitSpec<AllStrings>!
                 var testModel: String!
-                var testEffects: [String]!
+                var testEffects: Set<String>!
                 var assertionClosureCalled = false
 
                 beforeEach {
                     testModel = UUID().uuidString
-                    testEffects = ["1", "2", "3"]
-                    initiator = { (model: inout String) -> [String] in
-                        model = model + model
-                        return testEffects
+                    testEffects = Set(["1", "2", "3"])
+                    initiator = { (model: String) in
+                        First<String, String>(model: model + model, effects: testEffects)
                     }
 
                     spec = InitSpec<AllStrings>(initiator)
@@ -48,7 +47,7 @@ class InitSpecTests: QuickSpec {
                     spec.when(testModel).then({ (first: First<String, String>) in
                         assertionClosureCalled = true
                         expect(first.model).to(equal(testModel + testModel))
-                        expect(first.effects).to(equal(Set(testEffects)))
+                        expect(first.effects).to(equal(testEffects))
                     })
 
                     expect(assertionClosureCalled).to(beTrue())

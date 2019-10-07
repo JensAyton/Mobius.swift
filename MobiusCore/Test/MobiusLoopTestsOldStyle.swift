@@ -22,7 +22,7 @@ import Foundation
 import Nimble
 import Quick
 
-class MobiusLoopTests: QuickSpec {
+class MobiusLoopTestsOldStyle: QuickSpec {
     // swiftlint:disable function_body_length
     override func spec() {
         describe("MobiusLoop") {
@@ -38,10 +38,7 @@ class MobiusLoopTests: QuickSpec {
 
                 modelObserver = { receivedModels.append($0) }
 
-                let update: _NewUpdate<AllStrings> = { model, event in
-                    model = event
-                    return []
-                }
+                let update: _OldUpdate<AllStrings> = { _, event in Next.next(event) }
 
                 effectHandler = SimpleTestConnectable()
 
@@ -107,10 +104,7 @@ class MobiusLoopTests: QuickSpec {
                 }
 
                 it("should queue up events dispatched before start to support racy initialisations") {
-                    let update: _NewUpdate<AllStrings> = { model, event in
-                        model = model + "-" + event
-                        return []
-                    }
+                    let update: _OldUpdate<AllStrings> = { model, event in Next.next(model + "-" + event) }
 
                     loop = Mobius.loop(update: update, effectHandler: EagerEffectHandler())
                         .withEventQueue(queue)
@@ -234,7 +228,9 @@ class MobiusLoopTests: QuickSpec {
             describe("when creating a builder") {
                 context("when a class corresponding to the ConnectableProtocol is used as effecthandler") {
                     beforeEach {
-                        let update: _NewUpdate<AllStrings> = { _, _ in [] }
+                        let update = { (_: String, _: String) -> Next<String, String> in
+                            Next<String, String>.noChange
+                        }
 
                         builder = Mobius.loop(update: update, effectHandler: TestConnectableProtocolImpl())
                     }

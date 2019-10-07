@@ -22,9 +22,14 @@ import MobiusCore
 public typealias AssertFirst<Model, Effect: Hashable> = (First<Model, Effect>) -> Void
 
 public final class InitSpec<Types: LoopTypes> {
-    let initiator: Initiator<Types>
+    let initiator: _NewInitiator<Types>
 
-    public init(_ initiator: @escaping Initiator<Types>) {
+    @available(*, deprecated, message: "use new initiator signature (Model) -> (Model, [Effect])")
+    public init(_ initiator: @escaping _OldInitiator<Types>) {
+        self.initiator = Mobius._adaptInitiator(initiator)
+    }
+
+    public init(_ initiator: @escaping _NewInitiator<Types>) {
         self.initiator = initiator
     }
 
@@ -34,16 +39,24 @@ public final class InitSpec<Types: LoopTypes> {
 
     public struct Then {
         let model: Types.Model
-        let initiator: Initiator<Types>
+        let initiator: _NewInitiator<Types>
 
-        public init(_ model: Types.Model, initiator: @escaping Initiator<Types>) {
+        // Migration note: unlike the UpdateSpec equivalents, this is public for some reason.
+        @available(*, deprecated, message: "use new initiator signature (Model) -> (Model, [Effect])")
+        public init(_ model: Types.Model, initiator: @escaping _OldInitiator<Types>) {
+            self.model = model
+            self.initiator = Mobius._adaptInitiator(initiator)
+        }
+
+        public init(_ model: Types.Model, initiator: @escaping _NewInitiator<Types>) {
             self.model = model
             self.initiator = initiator
         }
 
         public func then(_ assertion: AssertFirst<Types.Model, Types.Effect>) {
-            let first = initiator(model)
-            assertion(first)
+            var newModel = model
+            let effects = initiator(&newModel)
+            assertion(First(model: newModel, effects: Set(effects)))
         }
     }
 }

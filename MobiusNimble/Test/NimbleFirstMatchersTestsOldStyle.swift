@@ -24,7 +24,7 @@ import Nimble
 import Quick
 import XCTest
 
-class NimbleFirstMatchersTests: QuickSpec {
+class NimbleFirstMatchersTestsOldStyle: QuickSpec {
     // swiftlint:disable function_body_length
     override func spec() {
         let assertionHandler = AssertionRecorder()
@@ -44,8 +44,8 @@ class NimbleFirstMatchersTests: QuickSpec {
             }
 
             let model = "3"
-            func testInitiator(model: inout String) -> [String] {
-                return ["2", "4"]
+            func testInitiator(model: String) -> First<String, String> {
+                return First<String, String>(model: model, effects: Set(["2", "4"]))
             }
 
             // Testing through proxy: UpdateSpec

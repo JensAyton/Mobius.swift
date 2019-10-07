@@ -46,7 +46,7 @@ private enum MyEffect {
     case triggerFroobish
 }
 
-class UpdateSpecTests: QuickSpec {
+class UpdateSpecTestsOldStyle: QuickSpec {
     // swiftlint:disable function_body_length
     override func spec() {
         let updateSpec = UpdateSpec<MyTypes>(myUpdate)
@@ -117,13 +117,12 @@ class UpdateSpecTests: QuickSpec {
         }
     }
 
-    private func myUpdate(_ model: inout MyModel, _ event: MyEvent) -> [MyEffect] {
+    private func myUpdate(_ model: MyModel, _ event: MyEvent) -> Next<MyModel, MyEffect> {
         switch event {
         case .didTapButton:
-            model = MyModel(buttonClicked: !model.buttonClicked, count: model.count + 1)
-            return []
+            return Next.next(MyModel(buttonClicked: !model.buttonClicked, count: model.count + 1))
         case .didFlerbishFlerb:
-            return [MyEffect.triggerFroobish]
+            return Next.dispatchEffects([MyEffect.triggerFroobish])
         }
     }
 }

@@ -22,7 +22,7 @@ import Foundation
 import Nimble
 import Quick
 
-class MobiusControllerTests: QuickSpec {
+class MobiusControllerTestsOldStyle: QuickSpec {
     let serialEventQueue = DispatchQueue(label: "serialEventQueue")
     let serialEffectQueue = DispatchQueue(label: "serialEffectQueue")
 
@@ -36,9 +36,8 @@ class MobiusControllerTests: QuickSpec {
             beforeEach {
                 view = RecordingTestConnectable()
 
-                let updateFunction = { (model: inout String, event: String) -> [String] in
-                    model = "\(model)-\(event)"
-                    return []
+                let updateFunction = { (model: String, event: String) -> Next<String, String> in
+                    .next("\(model)-\(event)")
                 }
 
                 var builder: Mobius.Builder<AllStrings> = Mobius.loop(
@@ -124,10 +123,7 @@ class MobiusControllerTests: QuickSpec {
                     beforeEach {
                         modelObserver = MockConnectable()
                         effectObserver = MockConnectable()
-                        let builder: Mobius.Builder<AllStrings> = Mobius.loop(
-                            update: { _, _ in [] },
-                            effectHandler: effectObserver
-                        )
+                        let builder: Mobius.Builder<AllStrings> = Mobius.loop(update: { _, _ in .noChange }, effectHandler: effectObserver)
                         controller = MobiusController<AllStrings>(builder: builder, defaultModel: "")
                         controller.connectView(modelObserver)
                         controller.start()
