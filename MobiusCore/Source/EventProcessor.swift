@@ -22,7 +22,7 @@ import Foundation
 /// Internal class that manages the atomic state updates and notifications of model changes when processing of events via
 /// the Update function.
 class EventProcessor<Types: LoopTypes>: Disposable, CustomDebugStringConvertible {
-    let update: _OldUpdate<Types>
+    let update: _NewUpdate<Types>
     let publisher: ConnectablePublisher<Next<Types.Model, Types.Effect>>
 
     private let queue: DispatchQueue
@@ -41,7 +41,7 @@ class EventProcessor<Types: LoopTypes>: Disposable, CustomDebugStringConvertible
     }
 
     init(
-        update: @escaping _OldUpdate<Types>,
+        update: @escaping _NewUpdate<Types>,
         publisher: ConnectablePublisher<Next<Types.Model, Types.Effect>>,
         queue: DispatchQueue
     ) {
@@ -67,13 +67,10 @@ class EventProcessor<Types: LoopTypes>: Disposable, CustomDebugStringConvertible
     func accept(_ event: Types.Event) {
         queue.async(flags: .barrier) {
             if let current = self.currentModel {
-                let next = self.update(current, event)
+                let (newModel, effects) = Mobius.apply(self.update, model: current, event: event)
+                self.currentModel = newModel
 
-                if let newModel = next.model {
-                    self.currentModel = newModel
-                }
-
-                self.publisher.post(next)
+                self.publisher.post(.next(newModel, effects: Set(effects)))
             } else {
                 self.queuedEvents.append(event)
             }

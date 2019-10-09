@@ -105,7 +105,7 @@ public final class MobiusLoop<Types: LoopTypes>: Disposable, CustomDebugStringCo
         let nextPublisher = ConnectablePublisher<Next<Types.Model, Types.Effect>>()
 
         // event processor: process events, publish Next:s, retain current model
-        let eventProcessor = EventProcessor<Types>(update: Mobius._adaptUpdate(loggingUpdate.update), publisher: nextPublisher, queue: eventQueue)
+        let eventProcessor = EventProcessor<Types>(update: loggingUpdate.update, publisher: nextPublisher, queue: eventQueue)
 
         // effect handler: handle effects, push events to the event processor
         let effectHandlerConnection = effectHandler.connect(eventProcessor.accept)
