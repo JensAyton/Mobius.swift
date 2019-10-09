@@ -43,8 +43,7 @@ public extension Mobius {
     static func _adaptUpdate<Model, Event, Effect>(_ update: @escaping (inout Model, Event) -> [Effect])
     -> (Model, Event) -> Next<Model, Effect> {
         return { model, event in
-            var newModel = model
-            let effects = update(&newModel, event)
+            let (newModel, effects) = apply(update, model: model, event: event)
             return Next(model: newModel, effects: Set(effects))
         }
     }
@@ -63,8 +62,7 @@ public extension Mobius {
     static func _adaptInitiator<Model, Effect>(_ initiator: @escaping (inout Model) -> [Effect])
     -> (Model) -> First<Model, Effect> {
         return { model in
-            var newModel = model
-            let effects = initiator(&newModel)
+            let (newModel, effects) = apply(initiator, model: model)
             return First(model: newModel, effects: Set(effects))
         }
     }

@@ -29,20 +29,21 @@ class LoggingInitiatorTests: QuickSpec {
 
             beforeEach {
                 logger = TestMobiusLogger()
-                loggingInitiator = LoggingInitiator({ model in First(model: model) }, logger)
+                loggingInitiator = LoggingInitiator({ _ in [] }, logger)
             }
 
             it("should log willInitiate and didInitiate for each initiate attempt") {
-                _ = loggingInitiator.initiate("from this")
+                _ = Mobius.apply(loggingInitiator.initiate, model: "from this")
 
                 expect(logger.logMessages).to(equal(["willInitiate(from this)", "didInitiate(from this, First<String, String>(model: \"from this\", effects: Set([])))"]))
             }
 
             it("should return init from delegate") {
-                let first = loggingInitiator.initiate("hey")
+                var model = "hey"
+                let effects = loggingInitiator.initiate(&model)
 
-                expect(first.model).to(equal("hey"))
-                expect(first.effects).to(beEmpty())
+                expect(model).to(equal("hey"))
+                expect(effects).to(beEmpty())
             }
         }
     }

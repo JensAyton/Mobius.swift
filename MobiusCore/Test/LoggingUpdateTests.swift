@@ -29,20 +29,20 @@ class LoggingUpdateTests: QuickSpec {
 
             beforeEach {
                 logger = TestMobiusLogger()
-                loggingUpdate = LoggingUpdate({ model, event in Next(model: model, effects: [event]) }, logger)
+                loggingUpdate = LoggingUpdate({ model, event in [event] }, logger)
             }
 
             it("should log willUpdate and didUpdate for each update attempt") {
-                _ = loggingUpdate.update("from this", "ee")
+                _ = Mobius.apply(loggingUpdate.update, model: "from this", event: "ee")
 
                 expect(logger.logMessages).to(equal(["willUpdate(from this, ee)", "didUpdate(from this, ee, (\"from this\", [\"ee\"]))"]))
             }
 
             it("should return update from delegate") {
-                let next = loggingUpdate.update("hey", "event/effect")
+                let (model, effects) = Mobius.apply(loggingUpdate.update, model: "hey", event: "event/effect")
 
-                expect(next.model).to(equal("hey"))
-                expect(next.effects).to(equal(["event/effect"]))
+                expect(model).to(equal("hey"))
+                expect(effects).to(equal(["event/effect"]))
             }
         }
     }

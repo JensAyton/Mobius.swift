@@ -88,10 +88,10 @@ public final class MobiusLoop<Types: LoopTypes>: Disposable, CustomDebugStringCo
 
     // swiftlint:disable:next function_parameter_count
     static func createLoop<C: Connectable>(
-        update: @escaping _OldUpdate<Types>,
+        update: @escaping _NewUpdate<Types>,
         effectHandler: C,
         initialModel: Types.Model,
-        initiator: @escaping _OldInitiator<Types>,
+        initiator: @escaping _NewInitiator<Types>,
         eventSource: AnyEventSource<Types.Event>,
         eventQueue: DispatchQueue,
         effectQueue: DispatchQueue,
@@ -105,7 +105,7 @@ public final class MobiusLoop<Types: LoopTypes>: Disposable, CustomDebugStringCo
         let nextPublisher = ConnectablePublisher<Next<Types.Model, Types.Effect>>()
 
         // event processor: process events, publish Next:s, retain current model
-        let eventProcessor = EventProcessor<Types>(update: loggingUpdate.update, publisher: nextPublisher, queue: eventQueue)
+        let eventProcessor = EventProcessor<Types>(update: Mobius._adaptUpdate(loggingUpdate.update), publisher: nextPublisher, queue: eventQueue)
 
         // effect handler: handle effects, push events to the event processor
         let effectHandlerConnection = effectHandler.connect(eventProcessor.accept)
@@ -130,7 +130,8 @@ public final class MobiusLoop<Types: LoopTypes>: Disposable, CustomDebugStringCo
         let nextConnection = nextPublisher.connect(to: nextConsumer)
 
         // everything is hooked up, start processing!
-        eventProcessor.start(from: loggingInitiator.initiate(initialModel))
+        let (startModel, startEffects) = Mobius.apply(loggingInitiator.initiate, model: initialModel)
+        eventProcessor.start(from: First(model: startModel, effects: Set(startEffects)))
 
         return MobiusLoop(
             eventProcessor: eventProcessor,
