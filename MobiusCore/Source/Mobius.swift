@@ -25,9 +25,9 @@ public protocol LoopTypes {
     associatedtype Effect: Hashable
 }
 
-public typealias _NewUpdate<T: LoopTypes> = (inout T.Model, T.Event) -> [T.Effect]
+public typealias Update<T: LoopTypes> = (inout T.Model, T.Event) -> [T.Effect]
 
-public typealias _NewInitiator<T: LoopTypes> = (inout T.Model) -> [T.Effect]
+public typealias Initiator<T: LoopTypes> = (inout T.Model) -> [T.Effect]
 
 public enum Mobius {}
 
@@ -45,9 +45,16 @@ public extension Mobius {
     ///   - update: the `Update` function of the loop
     ///   - effectHandler: an instance conforming to the `ConnectableProtocol`. Will be used to handle effects by the loop
     /// - Returns: a `Builder` instance that you can further configure before starting the loop
-    @available(*, deprecated, message: "use new update signature (inout Model, Event) -> [Effect]")
-    static func loop<T: LoopTypes, C: Connectable>(update: @escaping _OldUpdate<T>, effectHandler: C) -> Builder<T> where C.InputType == T.Effect, C.OutputType == T.Event {
-        return loop(update: Mobius._adaptUpdate(update), effectHandler: effectHandler)
+    static func loop<T: LoopTypes, C: Connectable>(update: @escaping Update<T>, effectHandler: C) -> Builder<T> where C.InputType == T.Effect, C.OutputType == T.Event {
+        return Builder<T>(
+            update: update,
+            effectHandler: effectHandler,
+            initiator: { _ in [] },
+            eventSource: AnyEventSource<T.Event>({ _ in AnonymousDisposable(disposer: {}) }),
+            eventQueue: DispatchQueue(label: "event processor"),
+            effectQueue: DispatchQueue(label: "effect processor", attributes: .concurrent),
+            logger: AnyMobiusLogger(NoopLogger<T>())
+        )
     }
 
     /// Create a `Builder` to help you configure a `MobiusLoop ` before starting it.
@@ -61,31 +68,24 @@ public extension Mobius {
     ///   - update: the `Update` function of the loop
     ///   - effectHandler: an instance conforming to the `ConnectableProtocol`. Will be used to handle effects by the loop
     /// - Returns: a `Builder` instance that you can further configure before starting the loop
-    static func loop<T: LoopTypes, C: Connectable>(update: @escaping _NewUpdate<T>, effectHandler: C) -> Builder<T> where C.InputType == T.Effect, C.OutputType == T.Event {
-        return Builder<T>(
-            update: update,
-            effectHandler: effectHandler,
-            initiator: { _ in [] },
-            eventSource: AnyEventSource<T.Event>({ _ in AnonymousDisposable(disposer: {}) }),
-            eventQueue: DispatchQueue(label: "event processor"),
-            effectQueue: DispatchQueue(label: "effect processor", attributes: .concurrent),
-            logger: AnyMobiusLogger(NoopLogger<T>())
-        )
+    @available(*, deprecated, message: "use new update signature (inout Model, Event) -> [Effect]")
+    static func loop<T: LoopTypes, C: Connectable>(update: @escaping _OldUpdate<T>, effectHandler: C) -> Builder<T> where C.InputType == T.Effect, C.OutputType == T.Event {
+        return loop(update: Mobius._adaptUpdate(update), effectHandler: effectHandler)
     }
 
     struct Builder<Types: LoopTypes> {
-        private let update: _NewUpdate<Types>
+        private let update: Update<Types>
         private let effectHandler: AnyConnectable<Types.Effect, Types.Event>
-        private let initiator: _NewInitiator<Types>
+        private let initiator: Initiator<Types>
         private let eventSource: AnyEventSource<Types.Event>
         private let eventQueue: DispatchQueue
         private let effectQueue: DispatchQueue
         private let logger: AnyMobiusLogger<Types>
 
         fileprivate init<C: Connectable>(
-            update: @escaping _NewUpdate<Types>,
+            update: @escaping Update<Types>,
             effectHandler: C,
-            initiator: @escaping _NewInitiator<Types>,
+            initiator: @escaping Initiator<Types>,
             eventSource: AnyEventSource<Types.Event>,
             eventQueue: DispatchQueue,
             effectQueue: DispatchQueue,
@@ -112,12 +112,7 @@ public extension Mobius {
             )
         }
 
-        @available(*, deprecated, message: "use new initiator signature (Model) -> (Model, [Effect])")
-        public func withInitiator(_ initiator: @escaping _OldInitiator<Types>) -> Builder<Types> {
-            return withInitiator(Mobius._adaptInitiator(initiator))
-        }
-
-        public func withInitiator(_ initiator: @escaping _NewInitiator<Types>) -> Builder<Types> {
+        public func withInitiator(_ initiator: @escaping Initiator<Types>) -> Builder<Types> {
             return Builder<Types>(
                 update: update,
                 effectHandler: effectHandler,
@@ -127,6 +122,11 @@ public extension Mobius {
                 effectQueue: effectQueue,
                 logger: logger
             )
+        }
+
+        @available(*, deprecated, message: "use new initiator signature (Model) -> (Model, [Effect])")
+        public func withInitiator(_ initiator: @escaping _OldInitiator<Types>) -> Builder<Types> {
+            return withInitiator(Mobius._adaptInitiator(initiator))
         }
 
         public func withEventQueue(_ eventQueue: DispatchQueue) -> Builder<Types> {
@@ -182,6 +182,14 @@ public extension Mobius {
 
 extension Mobius {
 
+    /// Invoke an `Update` function.
+    ///
+    /// - Parameters:
+    ///   - update: The update function to call
+    ///   - model: The input model argument to the update function
+    ///   - event: The event argument to the update function
+    /// - Returns: A tuple whose first value is the mutated `model`, and whose second value is the list of effects
+    ///   returned by the update function.
     static func apply<Model, Event, Effect>(
         _ update: (inout Model, Event) -> [Effect],
         model: Model,
@@ -192,6 +200,13 @@ extension Mobius {
         return (newModel, effects)
     }
 
+    /// Invoke an `Initiator` function.
+    ///
+    /// - Parameters:
+    ///   - initiator: The initiator function to call
+    ///   - model: the input model to the initiator
+    /// - Returns: A tuple whose first value is the mutated `model`, and whose second value is the list of effects
+    ///   returned by the initiator function.
     static func apply<Model, Effect>(_ initiator: (inout Model) -> Effect, model: Model) -> (Model, Effect) {
         var newModel = model
         let effects = initiator(&newModel)
@@ -200,11 +215,11 @@ extension Mobius {
 }
 
 class LoggingInitiator<Types: LoopTypes> {
-    private let realInit: _NewInitiator<Types>
+    private let realInit: Initiator<Types>
     private let willInit: (Types.Model) -> Void
     private let didInit: (Types.Model, Types.Model, [Types.Effect]) -> Void
 
-    init<L: MobiusLogger>(_ realInit: @escaping _NewInitiator<Types>, _ logger: L) where L.Model == Types.Model, L.Event == Types.Event, L.Effect == Types.Effect {
+    init<L: MobiusLogger>(_ realInit: @escaping Initiator<Types>, _ logger: L) where L.Model == Types.Model, L.Event == Types.Event, L.Effect == Types.Effect {
         self.realInit = realInit
         willInit = logger.willInitiate
         didInit = logger.didInitiate
@@ -222,11 +237,11 @@ class LoggingInitiator<Types: LoopTypes> {
 }
 
 class LoggingUpdate<Types: LoopTypes> {
-    private let realUpdate: _NewUpdate<Types>
+    private let realUpdate: Update<Types>
     private let willUpdate: (Types.Model, Types.Event) -> Void
     private let didUpdate: (Types.Model, Types.Event, Types.Model, [Types.Effect]) -> Void
 
-    init<L: MobiusLogger>(_ realUpdate: @escaping _NewUpdate<Types>, _ logger: L) where L.Model == Types.Model, L.Event == Types.Event, L.Effect == Types.Effect {
+    init<L: MobiusLogger>(_ realUpdate: @escaping Update<Types>, _ logger: L) where L.Model == Types.Model, L.Event == Types.Event, L.Effect == Types.Effect {
         self.realUpdate = realUpdate
         willUpdate = logger.willUpdate
         didUpdate = logger.didUpdate

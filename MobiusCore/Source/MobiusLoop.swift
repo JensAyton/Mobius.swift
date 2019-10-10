@@ -88,10 +88,10 @@ public final class MobiusLoop<Types: LoopTypes>: Disposable, CustomDebugStringCo
 
     // swiftlint:disable:next function_parameter_count
     static func createLoop<C: Connectable>(
-        update: @escaping _NewUpdate<Types>,
+        update: @escaping Update<Types>,
         effectHandler: C,
         initialModel: Types.Model,
-        initiator: @escaping _NewInitiator<Types>,
+        initiator: @escaping Initiator<Types>,
         eventSource: AnyEventSource<Types.Event>,
         eventQueue: DispatchQueue,
         effectQueue: DispatchQueue,

@@ -37,7 +37,7 @@ public protocol MobiusLogger: LoopTypes {
     /// - Parameters:
     ///     - startModel: the model that was passed to the initiator
     ///     - initiatedModel: the model after the initiator was run
-    ///     - effects: the effects returned by the initator
+    ///     - effects: the effects returned by the initiator
     func didInitiate(startModel: Model, initiatedModel: Model, effects: [Effect])
 
     /// Old variant of `didInitiate`. Implement the signature above instead.

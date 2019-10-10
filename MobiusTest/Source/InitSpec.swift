@@ -22,15 +22,15 @@ import MobiusCore
 public typealias AssertFirst<Model, Effect: Hashable> = (First<Model, Effect>) -> Void
 
 public final class InitSpec<Types: LoopTypes> {
-    let initiator: _NewInitiator<Types>
+    let initiator: Initiator<Types>
 
-    @available(*, deprecated, message: "use new initiator signature (Model) -> (Model, [Effect])")
-    public init(_ initiator: @escaping _OldInitiator<Types>) {
-        self.initiator = Mobius._adaptInitiator(initiator)
+    public init(_ initiator: @escaping Initiator<Types>) {
+        self.initiator = initiator
     }
 
-    public init(_ initiator: @escaping _NewInitiator<Types>) {
-        self.initiator = initiator
+    @available(*, deprecated, message: "use new initiator signature (Model) -> (Model, [Effect])")
+    public convenience init(_ initiator: @escaping _OldInitiator<Types>) {
+        self.init(Mobius._adaptInitiator(initiator))
     }
 
     public func when(_ model: Types.Model) -> Then {
@@ -39,18 +39,17 @@ public final class InitSpec<Types: LoopTypes> {
 
     public struct Then {
         let model: Types.Model
-        let initiator: _NewInitiator<Types>
+        let initiator: Initiator<Types>
+
+        public init(_ model: Types.Model, initiator: @escaping Initiator<Types>) {
+            self.model = model
+            self.initiator = initiator
+        }
 
         // Migration note: unlike the UpdateSpec equivalents, this is public for some reason.
         @available(*, deprecated, message: "use new initiator signature (Model) -> (Model, [Effect])")
         public init(_ model: Types.Model, initiator: @escaping _OldInitiator<Types>) {
-            self.model = model
-            self.initiator = Mobius._adaptInitiator(initiator)
-        }
-
-        public init(_ model: Types.Model, initiator: @escaping _NewInitiator<Types>) {
-            self.model = model
-            self.initiator = initiator
+            self.init(model, initiator: Mobius._adaptInitiator(initiator))
         }
 
         public func then(_ assertion: AssertFirst<Types.Model, Types.Effect>) {

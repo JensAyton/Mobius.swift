@@ -27,7 +27,7 @@ class InitSpecTests: QuickSpec {
     override func spec() {
         describe("InitSpec") {
             context("when setting up a test scenario") {
-                var initiator: _NewInitiator<AllStrings>!
+                var initiator: Initiator<AllStrings>!
                 var spec: InitSpec<AllStrings>!
                 var testModel: String!
                 var testEffects: [String]!

@@ -38,7 +38,7 @@ class MobiusLoopTests: QuickSpec {
 
                 modelObserver = { receivedModels.append($0) }
 
-                let update: _NewUpdate<AllStrings> = { model, event in
+                let update: Update<AllStrings> = { model, event in
                     model = event
                     return []
                 }
@@ -107,7 +107,7 @@ class MobiusLoopTests: QuickSpec {
                 }
 
                 it("should queue up events dispatched before start to support racy initialisations") {
-                    let update: _NewUpdate<AllStrings> = { model, event in
+                    let update: Update<AllStrings> = { model, event in
                         model = model + "-" + event
                         return []
                     }
@@ -234,7 +234,7 @@ class MobiusLoopTests: QuickSpec {
             describe("when creating a builder") {
                 context("when a class corresponding to the ConnectableProtocol is used as effecthandler") {
                     beforeEach {
-                        let update: _NewUpdate<AllStrings> = { _, _ in [] }
+                        let update: Update<AllStrings> = { _, _ in [] }
 
                         builder = Mobius.loop(update: update, effectHandler: TestConnectableProtocolImpl())
                     }

@@ -26,15 +26,15 @@ public struct UpdateSpec<Types: LoopTypes> {
 
     public typealias Assert = (Result) -> Void
 
-    private let update: _NewUpdate<Types>
+    private let update: Update<Types>
+
+    public init(_ update: @escaping Update<Types>) {
+        self.update = update
+    }
 
     @available(*, deprecated, message: "use new update signature (inout Model, Event) -> [Effect]")
     public init(_ update: @escaping _OldUpdate<Types>) {
-        self.update = Mobius._adaptUpdate(update)
-    }
-
-    public init(_ update: @escaping _NewUpdate<Types>) {
-        self.update = update
+        self.init(Mobius._adaptUpdate(update))
     }
 
     public func given(_ model: Model) -> When {
@@ -42,10 +42,10 @@ public struct UpdateSpec<Types: LoopTypes> {
     }
 
     public struct When {
-        private let update: _NewUpdate<Types>
+        private let update: Update<Types>
         private let model: Model
 
-        init(_ update: @escaping _NewUpdate<Types>, _ model: Model) {
+        init(_ update: @escaping Update<Types>, _ model: Model) {
             self.update = update
             self.model = model
         }
@@ -56,11 +56,11 @@ public struct UpdateSpec<Types: LoopTypes> {
     }
 
     public struct Then {
-        private let update: _NewUpdate<Types>
+        private let update: Update<Types>
         private let model: Model
         private let events: [Event]
 
-        init(_ update: @escaping _NewUpdate<Types>, _ model: Model, _ events: [Event]) {
+        init(_ update: @escaping Update<Types>, _ model: Model, _ events: [Event]) {
             self.update = update
             self.model = model
             self.events = events
