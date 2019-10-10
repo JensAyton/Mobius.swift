@@ -35,7 +35,7 @@ class LoggingInitiatorTests: QuickSpec {
             it("should log willInitiate and didInitiate for each initiate attempt") {
                 _ = Mobius.apply(loggingInitiator.initiate, model: "from this")
 
-                expect(logger.logMessages).to(equal(["willInitiate(from this)", "didInitiate(from this, First<String, String>(model: \"from this\", effects: Set([])))"]))
+                expect(logger.logMessages).to(equal(["willInitiate(from this)", "didInitiate(from this, from this, [])"]))
             }
 
             it("should return init from delegate") {

@@ -200,7 +200,7 @@ class MobiusLoopTestsOldStyle: QuickSpec {
                 }
 
                 it("should log startup") {
-                    expect(logger.logMessages).toEventually(equal(["willInitiate(begin)", "didInitiate(begin, First<String, String>(model: \"begin\", effects: Set([])))"]))
+                    expect(logger.logMessages).toEventually(equal(["willInitiate(begin)", "didInitiate(begin, begin, [])"]))
                 }
 
                 it("should log updates") {
@@ -208,7 +208,7 @@ class MobiusLoopTestsOldStyle: QuickSpec {
 
                     loop.dispatchEvent("hey")
 
-                    expect(logger.logMessages).toEventually(equal(["willUpdate(begin, hey)", "didUpdate(begin, hey, (\"hey\", []))"]))
+                    expect(logger.logMessages).toEventually(equal(["willUpdate(begin, hey)", "didUpdate(begin, hey, hey, [])"]))
                 }
             }
 

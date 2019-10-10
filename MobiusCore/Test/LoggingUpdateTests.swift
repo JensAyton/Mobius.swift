@@ -35,7 +35,7 @@ class LoggingUpdateTests: QuickSpec {
             it("should log willUpdate and didUpdate for each update attempt") {
                 _ = Mobius.apply(loggingUpdate.update, model: "from this", event: "ee")
 
-                expect(logger.logMessages).to(equal(["willUpdate(from this, ee)", "didUpdate(from this, ee, (\"from this\", [\"ee\"]))"]))
+                expect(logger.logMessages).to(equal(["willUpdate(from this, ee)", "didUpdate(from this, ee, from this, [\"ee\"])"]))
             }
 
             it("should return update from delegate") {

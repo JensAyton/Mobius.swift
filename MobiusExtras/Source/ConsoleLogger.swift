@@ -35,10 +35,10 @@ public class ConsoleLogger<Types: LoopTypes>: MobiusLogger {
         print(prefix + "Initializing loop")
     }
 
-    public func didInitiate(model: Model, first: First<Model, Effect>) {
-        print(prefix + "Loop initialized, starting from model: \(first.model)")
+    public func didInitiate(startModel: Model, initiatedModel: Model, effects: [Effect]) {
+        print(prefix + "Loop initialized, starting from model: \(initiatedModel)")
 
-        first.effects.forEach { (effect: Effect) in
+        effects.forEach { effect in
             print(prefix + "Effect dispatched: \(effect)")
         }
     }
@@ -47,12 +47,10 @@ public class ConsoleLogger<Types: LoopTypes>: MobiusLogger {
         print(prefix + "Event received: \(event)")
     }
 
-    public func didUpdate(model: Model, event: Event, next: Next<Model, Effect>) {
-        if let nextModel = next.model {
-            print(prefix + "Model updated: \(nextModel)")
-        }
+    public func didUpdate(inputModel: Model, event: Event, outputModel: Model, effects: [Effect]) {
+        print(prefix + "Model updated: \(outputModel)")
 
-        next.effects.forEach { (effect: Effect) in
+        effects.forEach { effect in
             print(prefix + "Effect dispatched: \(effect)")
         }
     }

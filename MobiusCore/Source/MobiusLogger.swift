@@ -35,6 +35,17 @@ public protocol MobiusLogger: LoopTypes {
     /// same thread as the initiator function.
     ///
     /// - Parameters:
+    ///     - startModel: the model that was passed to the initiator
+    ///     - initiatedModel: the model after the initiator was run
+    ///     - effects: the effects returned by the initator
+    func didInitiate(startModel: Model, initiatedModel: Model, effects: [Effect])
+
+    /// Old variant of `didInitiate`. Implement the signature above instead.
+    ///
+    /// This method mustn't block, as it'll hinder the loop from running. It will be called on the
+    /// same thread as the initiator function.
+    ///
+    /// - Parameters:
     ///     - model: the model that was passed to the initiator
     ///     - first: the resulting `First` instance
     func didInitiate(model: Model, first: First<Model, Effect>)
@@ -58,29 +69,45 @@ public protocol MobiusLogger: LoopTypes {
     ///     - model: the model that was passed to update
     ///     - event: the event that was passed to update
     ///     - result: the `Next` that update returned
+    func didUpdate(inputModel: Model, event: Event, outputModel: Model, effects: [Effect])
+
+    /// Old variant of `didUpdate`. Implement the signature above instead.
+    ///
+    /// This method mustn't block, as it'll hinder the loop from running. It will be called on the
+    /// same thread as the update function.
+    ///
+    /// - Parameters:
+    ///     - model: the model that was passed to update
+    ///     - event: the event that was passed to update
+    ///     - result: the `Next` that update returned
     func didUpdate(model: Model, event: Event, next: Next<Model, Effect>)
+}
+
+/// Default implementations do nothing
+public extension MobiusLogger {
+    func willInitiate(model: Model) {}
+
+    func didInitiate(startModel: Model, initiatedModel: Model, effects: [Effect]) {
+        // Default implementation calls old signature to support old loggers
+        didInitiate(model: startModel, first: First(model: initiatedModel, effects: Set(effects)))
+    }
+
+    func didInitiate(model: Model, first: First<Model, Effect>) {}
+
+    func willUpdate(model: Model, event: Event) {}
+
+    func didUpdate(inputModel: Model, event: Event, outputModel: Model, effects: [Effect]) {
+        // Default implementation calls old signature to support old loggers
+        didUpdate(model: inputModel, event: event, next: .next(outputModel, effects: Set(effects)))
+    }
+
+    func didUpdate(model: Model, event: Event, next: Next<Model, Effect>) {}
 }
 
 class NoopLogger<Types: LoopTypes>: MobiusLogger {
     typealias Model = Types.Model
     typealias Event = Types.Event
     typealias Effect = Types.Effect
-
-    func willInitiate(model: Model) {
-        // empty
-    }
-
-    func didInitiate(model: Model, first: First<Model, Effect>) {
-        // empty
-    }
-
-    func willUpdate(model: Model, event: Event) {
-        // empty
-    }
-
-    func didUpdate(model: Model, event: Event, next: Next<Model, Effect>) {
-        // empty
-    }
 }
 
 /// Type-erased `MobiusLogger`.
@@ -90,9 +117,9 @@ public class AnyMobiusLogger<Types: LoopTypes>: MobiusLogger {
     public typealias Effect = Types.Effect
 
     private let willInitiateClosure: (Model) -> Void
-    private let didInitiateClosure: (Model, First<Model, Effect>) -> Void
+    private let didInitiateClosure: (Model, Model, [Effect]) -> Void
     private let willUpdateClosure: (Model, Event) -> Void
-    private let didUpdateClosure: (Model, Event, Next<Model, Effect>) -> Void
+    private let didUpdateClosure: (Model, Event, Model, [Effect]) -> Void
 
     public init<L: MobiusLogger>(_ base: L) where L.Model == Model, L.Event == Event, L.Effect == Effect {
         willInitiateClosure = base.willInitiate
@@ -105,15 +132,15 @@ public class AnyMobiusLogger<Types: LoopTypes>: MobiusLogger {
         willInitiateClosure(model)
     }
 
-    public func didInitiate(model: Model, first: First<Model, Effect>) {
-        didInitiateClosure(model, first)
+    public func didInitiate(startModel: Model, initiatedModel: Model, effects: [Effect]) {
+        didInitiateClosure(startModel, initiatedModel, effects)
     }
 
     public func willUpdate(model: Model, event: Event) {
         willUpdateClosure(model, event)
     }
 
-    public func didUpdate(model: Model, event: Event, next: Next<Model, Effect>) {
-        didUpdateClosure(model, event, next)
+    public func didUpdate(inputModel: Model, event: Event, outputModel: Model, effects: [Effect]) {
+        didUpdateClosure(inputModel, event, outputModel, effects)
     }
 }

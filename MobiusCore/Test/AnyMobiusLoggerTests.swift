@@ -39,10 +39,10 @@ class AnyMobiusLoggerTests: QuickSpec {
             }
 
             it("should forward didInitiate messages to delegate") {
-                logger.didInitiate(model: "did start it", first: First(model: "the first model"))
+                logger.didInitiate(startModel: "did start it", initiatedModel: "the first model", effects: [])
 
                 expect(delegate.logMessages).to(equal([
-                    "didInitiate(did start it, First<String, String>(model: \"the first model\", effects: Set([])))",
+                    "didInitiate(did start it, the first model, [])",
                 ]))
             }
 
@@ -55,10 +55,15 @@ class AnyMobiusLoggerTests: QuickSpec {
             }
 
             it("should forward didUpdate messages to delegate") {
-                logger.didUpdate(model: "wrong order", event: "but it's a better test", next: Next.next("or?"))
+                logger.didUpdate(
+                    inputModel: "wrong order",
+                    event: "but it's a better test",
+                    outputModel: "or?",
+                    effects: []
+                )
 
                 expect(delegate.logMessages).to(equal([
-                    "didUpdate(wrong order, but it's a better test, (\"or?\", []))",
+                    "didUpdate(wrong order, but it's a better test, or?, [])",
                 ]))
             }
         }

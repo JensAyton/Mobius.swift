@@ -104,15 +104,15 @@ class TestMobiusLogger: MobiusLogger {
         logMessages.append("willInitiate(\(model))")
     }
 
-    func didInitiate(model: String, first: First<String, String>) {
-        logMessages.append("didInitiate(\(model), \(first))")
+    func didInitiate(startModel: Model, initiatedModel: Model, effects: [Effect]) {
+        logMessages.append("didInitiate(\(startModel), \(initiatedModel), \(effects))")
     }
 
     func willUpdate(model: String, event: String) {
         logMessages.append("willUpdate(\(model), \(event))")
     }
 
-    func didUpdate(model: String, event: String, next: Next<String, String>) {
-        logMessages.append("didUpdate(\(model), \(event), \(next))")
+    func didUpdate(inputModel: Model, event: Event, outputModel: Model, effects: [Effect]) {
+        logMessages.append("didUpdate(\(inputModel), \(event), \(outputModel), \(effects))")
     }
 }

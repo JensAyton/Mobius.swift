@@ -202,7 +202,7 @@ extension Mobius {
 class LoggingInitiator<Types: LoopTypes> {
     private let realInit: _NewInitiator<Types>
     private let willInit: (Types.Model) -> Void
-    private let didInit: (Types.Model, First<Types.Model, Types.Effect>) -> Void
+    private let didInit: (Types.Model, Types.Model, [Types.Effect]) -> Void
 
     init<L: MobiusLogger>(_ realInit: @escaping _NewInitiator<Types>, _ logger: L) where L.Model == Types.Model, L.Event == Types.Event, L.Effect == Types.Effect {
         self.realInit = realInit
@@ -215,7 +215,7 @@ class LoggingInitiator<Types: LoopTypes> {
 
         willInit(model)
         let effects = realInit(&model)
-        didInit(oldModel, First(model: model, effects: Set(effects)))
+        didInit(oldModel, model, effects)
 
         return effects
     }
@@ -224,7 +224,7 @@ class LoggingInitiator<Types: LoopTypes> {
 class LoggingUpdate<Types: LoopTypes> {
     private let realUpdate: _NewUpdate<Types>
     private let willUpdate: (Types.Model, Types.Event) -> Void
-    private let didUpdate: (Types.Model, Types.Event, Next<Types.Model, Types.Effect>) -> Void
+    private let didUpdate: (Types.Model, Types.Event, Types.Model, [Types.Effect]) -> Void
 
     init<L: MobiusLogger>(_ realUpdate: @escaping _NewUpdate<Types>, _ logger: L) where L.Model == Types.Model, L.Event == Types.Event, L.Effect == Types.Effect {
         self.realUpdate = realUpdate
@@ -237,7 +237,7 @@ class LoggingUpdate<Types: LoopTypes> {
 
         willUpdate(model, event)
         let effects = realUpdate(&model, event)
-        didUpdate(oldModel, event, .next(model, effects: Set(effects)))
+        didUpdate(oldModel, event, model, effects)
 
         return effects
     }
