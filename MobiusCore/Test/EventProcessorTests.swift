@@ -33,8 +33,8 @@ class EventProcessorTests: QuickSpec {
             }
 
             var eventProcessor: EventProcessor<IntTypes>!
-            var nextPublisher: ConnectablePublisher<Next<Int, Int>>!
-            var consumer: Consumer<Next<Int, Int>>!
+            var nextPublisher: ConnectablePublisher<(Int, [Int])>!
+            var consumer: Consumer<(Int, [Int])>!
             var receivedModels: [Int]!
             var queue: DispatchQueue!
 
@@ -45,9 +45,8 @@ class EventProcessorTests: QuickSpec {
 
                 receivedModels = []
                 consumer = {
-                    if let model = $0.model {
-                        receivedModels.append(model)
-                    }
+                    let (model, _) = $0
+                    receivedModels.append(model)
                 }
 
                 nextPublisher.connect(to: consumer)
@@ -55,14 +54,14 @@ class EventProcessorTests: QuickSpec {
 
             describe("publishing") {
                 it("should post the first to the publisher as a next") {
-                    eventProcessor.start(from: First(model: 1, effects: []))
+                    eventProcessor.start(from: 1, effects: [])
 
                     queue.waitForOutstandingTasks()
                     expect(receivedModels).to(equal([1]))
                 }
 
                 it("should post nexts to the publisher") {
-                    eventProcessor.start(from: First(model: 1, effects: []))
+                    eventProcessor.start(from: 1, effects: [])
 
                     eventProcessor.accept(10)
                     eventProcessor.accept(200)
@@ -80,7 +79,7 @@ class EventProcessorTests: QuickSpec {
 
                 context("given a start from 1") {
                     beforeEach {
-                        eventProcessor.start(from: First(model: 1, effects: []))
+                        eventProcessor.start(from: 1, effects: [])
                     }
 
                     it("should track the current model from start") {
@@ -101,7 +100,7 @@ class EventProcessorTests: QuickSpec {
                 eventProcessor.accept(80)
                 eventProcessor.accept(400)
 
-                eventProcessor.start(from: First(model: 1, effects: []))
+                eventProcessor.start(from: 1, effects: [])
 
                 queue.waitForOutstandingTasks()
 
@@ -124,7 +123,7 @@ class EventProcessorTests: QuickSpec {
 
                 context("when the event processor has a First") {
                     it("should produce the appropriate debug description") {
-                        eventProcessor.start(from: First(model: 1, effects: [2, 3]))
+                        eventProcessor.start(from: 1, effects: [2, 3])
                         let description = String(reflecting: eventProcessor)
                         expect(description).to(contain("Optional(<1")) // Due to synced queue its hard to test a processor with events
                     }

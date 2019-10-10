@@ -23,7 +23,7 @@ import Foundation
 /// the Update function.
 class EventProcessor<Types: LoopTypes>: Disposable, CustomDebugStringConvertible {
     let update: _NewUpdate<Types>
-    let publisher: ConnectablePublisher<Next<Types.Model, Types.Effect>>
+    let publisher: ConnectablePublisher<(Types.Model, [Types.Effect])>
 
     private let queue: DispatchQueue
 
@@ -42,7 +42,7 @@ class EventProcessor<Types: LoopTypes>: Disposable, CustomDebugStringConvertible
 
     init(
         update: @escaping _NewUpdate<Types>,
-        publisher: ConnectablePublisher<Next<Types.Model, Types.Effect>>,
+        publisher: ConnectablePublisher<(Types.Model, [Types.Effect])>,
         queue: DispatchQueue
     ) {
         self.update = update
@@ -50,11 +50,11 @@ class EventProcessor<Types: LoopTypes>: Disposable, CustomDebugStringConvertible
         self.queue = queue
     }
 
-    func start(from first: First<Types.Model, Types.Effect>) {
+    func start(from model: Types.Model, effects: [Types.Effect]) {
         queue.sync(flags: .barrier) {
-            currentModel = first.model
+            currentModel = model
 
-            publisher.post(Next.next(first.model, effects: first.effects))
+            self.post(model: model, effects: effects)
 
             for event in queuedEvents {
                 accept(event)
@@ -70,7 +70,7 @@ class EventProcessor<Types: LoopTypes>: Disposable, CustomDebugStringConvertible
                 let (newModel, effects) = Mobius.apply(self.update, model: current, event: event)
                 self.currentModel = newModel
 
-                self.publisher.post(.next(newModel, effects: Set(effects)))
+                self.post(model: newModel, effects: effects)
             } else {
                 self.queuedEvents.append(event)
             }
@@ -83,5 +83,9 @@ class EventProcessor<Types: LoopTypes>: Disposable, CustomDebugStringConvertible
 
     func readCurrentModel() -> Types.Model? {
         return queue.sync { currentModel }
+    }
+
+    private func post(model: Types.Model, effects: [Types.Effect]) {
+        publisher.post((model, effects))
     }
 }

@@ -173,7 +173,7 @@ class MobiusLoopTests: QuickSpec {
                 beforeEach {
                     eventProcessor = TestEventProcessor<AllStrings>(
                         update: { _, _ in [] },
-                        publisher: ConnectablePublisher<Next<String, String>>(),
+                        publisher: ConnectablePublisher<(String, [String])>(),
                         queue: DispatchQueue(label: "dispose test queue")
                     )
                     modelPublisher = ConnectablePublisher<String>()
@@ -251,7 +251,7 @@ class MobiusLoopTests: QuickSpec {
                     let publisher = ConnectablePublisher<String>()
                     let eventProcessor = TestEventProcessor<AllStrings>(
                         update: { _, _ in [] },
-                        publisher: ConnectablePublisher<Next<String, String>>(),
+                        publisher: ConnectablePublisher<(String, [String])>(),
                         queue: DispatchQueue(label: "dispose test queue")
                     )
                     eventProcessor.desiredDebugDescription = eventProcessorDebugDescription
