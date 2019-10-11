@@ -43,28 +43,16 @@ public func assertThatNext<Types: LoopTypes>(
 }
 
 /// - Returns: a `Predicate` that matches `Next` instances with no model and no effects.
+@available(*, deprecated, message: "updates now always produce a model. Test for the expected (initial) model instead. hasNothing() is equivalent to hasNoEffects()")
 public func hasNothing<Model, Effect>(file: StaticString = #file, line: UInt = #line) -> NextPredicate<Model, Effect> {
-    return { (next: Next<Model, Effect>) in
-        let noModelResult = hasNoModel(file: file, line: line)(next)
-        if case .success = noModelResult {
-            return hasNoEffects(file: file, line: line)(next)
-        }
-        return noModelResult
-    }
+    return hasNoEffects(file: file, line: line)
 }
 
 /// - Returns: a `Predicate` that matches `Next` instances without a model.
+@available(*, deprecated, message: "updates now always produce a model. hasNoModel() always succeeds. Test for the expected (initial) model instead")
 public func hasNoModel<Model, Effect>(file: StaticString = #file, line: UInt = #line) -> NextPredicate<Model, Effect> {
-    return { (next: Next<Model, Effect>) in
-        let model = next.model
-        if model != nil {
-            return .failure(
-                message: "Expected final Next to have no model. Got: <\(String(describing: model!))>",
-                file: file,
-                line: line
-            )
-        }
-        return .success
+    return { _ in
+        .success
     }
 }
 
