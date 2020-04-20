@@ -48,7 +48,7 @@ struct ConcurrentAccessDetector {
 
     private let state = State()
 
-    func `guard`<T>(file: StaticString = #file, line: UInt = #line, _ block: () throws -> T) rethrows -> T {
+    mutating func `guard`<T>(file: StaticString = #file, line: UInt = #line, _ block: () throws -> T) rethrows -> T {
         let location = Location(file: file, line: line, queue: currentQueueLabel())
 
         guard state.lock.try() else {

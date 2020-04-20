@@ -26,7 +26,7 @@ import Foundation
 ///
 /// Use `Mobius.loop(update:effectHandler:)` to create an instance.
 public final class MobiusLoop<Model, Event, Effect>: Disposable {
-    private let access = ConcurrentAccessDetector()
+    private var access = ConcurrentAccessDetector()
     private var workBag: WorkBag
 
     private var effectConnection: Connection<Effect>! = nil

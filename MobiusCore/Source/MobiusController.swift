@@ -31,7 +31,6 @@ public final class MobiusController<Model, Event, Effect> {
     private struct StoppedState {
         var modelToStartFrom: Model
         var viewConnectable: ViewConnectable?
-
     }
 
     private struct RunningState {
