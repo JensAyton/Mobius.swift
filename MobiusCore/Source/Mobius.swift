@@ -79,7 +79,7 @@ public enum Mobius {
         return Builder(
             update: update,
             effectHandler: effectHandler,
-            eventSource: AnyEventSource({ _ in AnonymousDisposable(disposer: {}) }),
+            eventSource: CompositeEventSourceBuilder(),
             eventConsumerTransformer: { $0 },
             logger: AnyMobiusLogger(NoopLogger())
         )
@@ -109,20 +109,20 @@ public enum Mobius {
     public struct Builder<Model, Event, Effect> {
         private let update: Update<Model, Event, Effect>
         private let effectHandler: AnyConnectable<Effect, Event>
-        private let eventSource: AnyEventSource<Event>
+        private let eventSourceBuilder: CompositeEventSourceBuilder<Event>
         private let logger: AnyMobiusLogger<Model, Event, Effect>
         private let eventConsumerTransformer: ConsumerTransformer<Event>
 
         fileprivate init<EffectHandler: Connectable>(
             update: Update<Model, Event, Effect>,
             effectHandler: EffectHandler,
-            eventSource: AnyEventSource<Event>,
+            eventSource: CompositeEventSourceBuilder<Event>,
             eventConsumerTransformer: @escaping ConsumerTransformer<Event>,
             logger: AnyMobiusLogger<Model, Event, Effect>
         ) where EffectHandler.Input == Effect, EffectHandler.Output == Event {
             self.update = update
             self.effectHandler = AnyConnectable(effectHandler)
-            self.eventSource = eventSource
+            self.eventSourceBuilder = eventSource
             self.logger = logger
             self.eventConsumerTransformer = eventConsumerTransformer
         }
@@ -145,7 +145,7 @@ public enum Mobius {
             return Builder(
                 update: update,
                 effectHandler: effectHandler,
-                eventSource: AnyEventSource(eventSource),
+                eventSource: eventSourceBuilder.addEventSource(eventSource),
                 eventConsumerTransformer: eventConsumerTransformer,
                 logger: logger
             )
@@ -163,7 +163,7 @@ public enum Mobius {
             return Builder(
                 update: update,
                 effectHandler: effectHandler,
-                eventSource: eventSource,
+                eventSource: eventSourceBuilder,
                 eventConsumerTransformer: eventConsumerTransformer,
                 logger: AnyMobiusLogger(logger)
             )
@@ -189,7 +189,7 @@ public enum Mobius {
             return Builder(
                 update: update,
                 effectHandler: effectHandler,
-                eventSource: eventSource,
+                eventSource: eventSourceBuilder,
                 eventConsumerTransformer: { consumer in transformer(oldTransfomer(consumer)) },
                 logger: logger
             )
@@ -204,7 +204,7 @@ public enum Mobius {
             return MobiusLoop(
                 model: initialModel,
                 update: update,
-                eventSource: eventSource,
+                eventSource: eventSourceBuilder.build(),
                 eventConsumerTransformer: eventConsumerTransformer,
                 effectHandler: effectHandler,
                 effects: effects,

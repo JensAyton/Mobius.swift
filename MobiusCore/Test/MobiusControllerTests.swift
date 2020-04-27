@@ -34,7 +34,8 @@ class MobiusControllerTests: QuickSpec {
         describe("MobiusController") {
             var controller: MobiusController<String, String, String>!
             var view: RecordingTestConnectable!
-            var eventSource: TestEventSource<String>!
+            var eventSource1: TestEventSource<String>!
+            var eventSource2: TestEventSource<String>!
             var effectHandler: RecordingTestConnectable!
             var activateInitiator: Bool!
 
@@ -61,11 +62,13 @@ class MobiusControllerTests: QuickSpec {
                     }
                 }
 
-                eventSource = TestEventSource()
+                eventSource1 = TestEventSource()
+                eventSource2 = TestEventSource()
                 effectHandler = RecordingTestConnectable()
 
                 controller = Mobius.loop(update: updateFunction, effectHandler: effectHandler)
-                    .withEventSource(eventSource)
+                    .withEventSource(eventSource1)
+                    .withEventSource(eventSource2)
                     .makeController(
                         from: "S",
                         initiate: initiate,
@@ -247,9 +250,9 @@ class MobiusControllerTests: QuickSpec {
                         controller.start()
                         controller.stop()
                     }
-                    it("should allow dispatching an event from the event source immediately") {
+                    it("should allow dispatching an event from an event source immediately") {
                         controller.connectView(view)
-                        eventSource.dispatchOnSubscribe("startup")
+                        eventSource1.dispatchOnSubscribe("startup")
                         controller.start()
                         controller.stop()
 
@@ -355,10 +358,19 @@ class MobiusControllerTests: QuickSpec {
                     controller.start()
                 }
 
-                it("should dispatch events from the event source") {
-                    eventSource.dispatch("event source event")
+                it("should dispatch events from an event source") {
+                    eventSource1.dispatch("event source event")
 
                     expect(view.recorder.items).toEventually(equal(["S", "S-event source event"]))
+                }
+
+                it("should dispatch events from multiple event source") {
+                    eventSource1.dispatch("event source 1 event")
+                    eventSource2.dispatch("event source 2 event")
+
+                    expect(view.recorder.items).toEventually(equal([
+                        "S", "S-event source 1 event", "S-event source 1 event-event source 2 event"
+                    ]))
                 }
             }
         }
